@@ -1,10 +1,14 @@
 import cv2 as cv
 
-# Read image
-img = cv.imread('photos/cat.jpg')
+capture = cv.VideoCapture('videos/dog.mp4')
 
-# Open window
-cv.imshow('Image recognition', img)
+while True:
+    isTrue, frame = capture.read()
 
-# When the '0' key is pressed, close the window
-cv.waitKey(0);
+    cv.imshow('video', frame)
+
+    if cv.waitKey(1) == ord('q'):
+        break
+
+capture.release()
+cv.destroyAllWindows()
