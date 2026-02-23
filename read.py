@@ -17,7 +17,7 @@ FPS_TEXT_POS = (2, 15)
 def putFpsText(frame):
     global prev_frame_time
 
-    font = cv.FONT_HERSHEY_SIMPLEX
+    font = cv.QT_FONT_NORMAL
     new_frame_time = time.time()
 
     fps = "FPS: " + str(int(1 / (new_frame_time - prev_frame_time)))
