@@ -12,11 +12,11 @@ new_frame_time = 0;
 
 # FPS Text Consts
 FPS_TEXT_COLOR = (255, 255, 255)
-FPS_TEXT_POS = (0, 15)
+FPS_TEXT_POS = (2, 15)
 
 def putFpsText(frame):
     global prev_frame_time
-    
+
     font = cv.FONT_HERSHEY_SIMPLEX
     new_frame_time = time.time()
 
