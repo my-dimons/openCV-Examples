@@ -1,43 +1,33 @@
 import cv2 as cv
 import time
 
-capture = cv.VideoCapture('videos/dog.mp4')
+face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_alt.xml')
+eye_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_eye.xml')
 
-object_detector = cv.createBackgroundSubtractorMOG2()
-
-FPS = 1 / 30
-
-def rescaleFrame(frame, scale = 0.75):
-    width = int(frame.shape[1] * scale)
-    height = int(frame.shape[0] * scale)
-    dimensions = (width, height)
-
-    return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
+video = cv.VideoCapture(0)
+fps = 1 / 30
 
 while True:
-    isTrue, frame = capture.read()
+    ret, frame = video.read()
 
-    if isTrue == False:
+    if not ret:
         break
-    
-    # Extract region of interest
 
-    mask = object_detector.apply(frame)
-    contours, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        # calc area and remove small elements
-        area = cv.contourArea(cnt)
-        if area > 100:
-            cv.drawContours(frame, [cnt], -1, (0, 255, 0), 2)
+    faces = face_cascade.detectMultiScale(frame, 1.1, 2)
+    eyes = eye_cascade.detectMultiScale(frame, 1.1, 2)
 
+    for(x, y, w, h) in faces:
+        cv.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
-    cv.imshow('video', frame)
-    cv.imshow("mask", mask)
+    for(x, y, w, h) in eyes:
+        cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    time.sleep(FPS)
+    cv.imshow("window", frame)
+
+    time.sleep(fps)
 
     if cv.waitKey(1) == ord('q'):
         break
 
-capture.release()
+video.release()
 cv.destroyAllWindows()
