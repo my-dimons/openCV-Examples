@@ -41,6 +41,10 @@ def process_image(frame):
 
     if (consts.APPLY_CANNY):
         processed_frame = cv.Canny(processed_frame, consts.CANNY_THRESHOLD_1, consts.CANNY_THRESHOLD_2)
+
+    if (consts.MIRROR_IMAGE):
+        processed_frame = cv.flip(processed_frame, 1)
+        
     return processed_frame
 
 def read_camera():
