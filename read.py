@@ -1,17 +1,20 @@
 import cv2 as cv
+import numpy as np
 
-# Read image
-img = cv.imread('photos/cat_large.jpg')
+blank = np.zeros((500, 500, 3), dtype='uint8')
+#cv.imshow('blank', blank)
 
-# Open window
-cv.imshow('Image recognition', img)
+cv.rectangle(blank, (0, 0), (blank.shape[1]//2, blank.shape[0]//2), (0, 255, 0), thickness=cv.FILLED)
+#cv.imshow('rectangle', blank)
 
-def rescaleFrame(frame, scale = 0.75):
-    width = int(frame.shape[1] * scale)
-    height = int(frame.shape[0] * scale)
-    dimensions = (width, height)
+cv.circle(blank, (250, 250), 40, (0, 0, 255), thickness=3)
 
-    return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
+cv.line(blank, (0, 0), (250, 300), (255, 0, 0), thickness=3)
 
+blank = cv.cvtColor(blank, cv.COLOR_BGR2GRAY)
+blank = cv.GaussianBlur(blank, (101, 101), cv.BORDER_DEFAULT)
+#blank = cv.Canny(blank, 125, 175)
+
+cv.imshow('img', blank)
 # When any key is pressed, close the window
 cv.waitKey(0);
