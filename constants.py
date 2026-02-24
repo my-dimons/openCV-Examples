@@ -7,7 +7,7 @@ APPLY_BLUR = False
 BLUR_AMOUNT = 7 # MUST BE ODD (for some reason)
 
 # edge cascade
-APPLY_CANNY = False
+APPLY_CANNY = True
 CANNY_THRESHOLD_1 = 125
 CANNY_THRESHOLD_2 = 175
 

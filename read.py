@@ -25,6 +25,7 @@ def calculate_fps():
     fps = "FPS: " + str(int(1 / (new_frame_time - prev_frame_time)))
     prev_frame_time = new_frame_time
 
+    print(fps)
     return fps
 
 def put_fps_text(frame, fps, position):
@@ -52,11 +53,12 @@ def read_camera():
         fps = calculate_fps()
 
         resized_frame = rescale_frame(frame, consts.WEBCAM_RESIZE)
+        processed_frame = process_image(resized_frame)
+
+        put_fps_text(processed_frame, fps, consts.FPS_TEXT_POS)
 
         cv.imshow('webcam', resized_frame)  
-        cv.imshow('processed webcam', process_image(resized_frame))
-
-        put_fps_text(frame, fps, consts.FPS_TEXT_POS)
+        cv.imshow('processed webcam', processed_frame)
 
         if cv.waitKey(1) == ord('q'):
             break
@@ -64,6 +66,3 @@ def read_camera():
 read_camera()
 cam.release()
 cv.destroyAllWindows()
-
-#if __name__ == "__main__":
-#    read_camera()
