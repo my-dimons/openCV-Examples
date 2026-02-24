@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import time
+import constants as consts
 
 cam = cv.VideoCapture(0)
 
@@ -10,18 +11,14 @@ frame_height = int(cam.get(cv.CAP_PROP_FRAME_HEIGHT))
 prev_frame_time = 0
 new_frame_time = 0
 
-# FPS Text Consts
-FPS_TEXT_COLOR = (255, 255, 255)
-FPS_TEXT_POS = (2, 15)
-
-def rescaleFrame(frame, scale = 0.75):
+def rescale_frame(frame, scale = 0.75):
     width = int(frame.shape[1] * scale)
     height = int(frame.shape[0] * scale)
     dimensions = (width, height)
 
     return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
 
-def calculateFPS():
+def calculate_fps():
     global prev_frame_time
     new_frame_time = time.time()
 
@@ -30,11 +27,20 @@ def calculateFPS():
 
     return fps
 
-def putFpsText(frame, fps, position):
-
+def put_fps_text(frame, fps, position):
     font = cv.QT_FONT_NORMAL
 
-    cv.putText(frame, fps, position, font, 0.5, FPS_TEXT_COLOR, 1, cv.LINE_AA)
+    cv.putText(frame, fps, position, font, consts.FPS_TEXT_SCALE, consts.FPS_TEXT_COLOR, 1, cv.LINE_AA)
+
+def process_image(frame):
+    processed_frame = frame
+
+    if (consts.APPLY_BLUR):
+        processed_frame = cv.GaussianBlur(processed_frame, (consts.BLUR_AMOUNT, consts.BLUR_AMOUNT), cv.BORDER_DEFAULT)
+
+    if (consts.APPLY_CANNY):
+        processed_frame = cv.Canny(processed_frame, consts.CANNY_THRESHOLD_1, consts.CANNY_THRESHOLD_2)
+    return processed_frame
 
 def read_camera():
     while True:
@@ -43,13 +49,14 @@ def read_camera():
         if ret == False:
             break
 
-        fps = calculateFPS()
+        fps = calculate_fps()
 
-        putFpsText(frame, fps, FPS_TEXT_POS)
-
-        resized_frame = rescaleFrame(frame, 1.5)
+        resized_frame = rescale_frame(frame, consts.WEBCAM_RESIZE)
 
         cv.imshow('webcam', resized_frame)  
+        cv.imshow('processed webcam', process_image(resized_frame))
+
+        put_fps_text(frame, fps, consts.FPS_TEXT_POS)
 
         if cv.waitKey(1) == ord('q'):
             break
@@ -57,3 +64,6 @@ def read_camera():
 read_camera()
 cam.release()
 cv.destroyAllWindows()
+
+#if __name__ == "__main__":
+#    read_camera()
