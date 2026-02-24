@@ -1,72 +1,43 @@
-import numpy as np
 import cv2 as cv
 import time
-import constants as consts
 
-cam = cv.VideoCapture(0)
+capture = cv.VideoCapture('videos/dog.mp4')
 
-frame_width = int(cam.get(cv.CAP_PROP_FRAME_WIDTH))
-frame_height = int(cam.get(cv.CAP_PROP_FRAME_HEIGHT))
+object_detector = cv.createBackgroundSubtractorMOG2()
 
-prev_frame_time = 0
-new_frame_time = 0
+FPS = 1 / 30
 
-def rescale_frame(frame, scale = 0.75):
+def rescaleFrame(frame, scale = 0.75):
     width = int(frame.shape[1] * scale)
     height = int(frame.shape[0] * scale)
     dimensions = (width, height)
 
     return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
 
-def calculate_fps():
-    global prev_frame_time
-    new_frame_time = time.time()
+while True:
+    isTrue, frame = capture.read()
 
-    fps = "FPS: " + str(int(1 / (new_frame_time - prev_frame_time)))
-    prev_frame_time = new_frame_time
+    if isTrue == False:
+        break
+    
+    # Extract region of interest
 
-    print(fps)
-    return fps
+    mask = object_detector.apply(frame)
+    contours, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        # calc area and remove small elements
+        area = cv.contourArea(cnt)
+        if area > 100:
+            cv.drawContours(frame, [cnt], -1, (0, 255, 0), 2)
 
-def put_fps_text(frame, fps, position):
-    font = cv.QT_FONT_NORMAL
 
-    cv.putText(frame, fps, position, font, consts.FPS_TEXT_SCALE, consts.FPS_TEXT_COLOR, 1, cv.LINE_AA)
+    cv.imshow('video', frame)
+    cv.imshow("mask", mask)
 
-def process_image(frame):
-    processed_frame = frame
+    time.sleep(FPS)
 
-    if (consts.APPLY_BLUR):
-        processed_frame = cv.GaussianBlur(processed_frame, (consts.BLUR_AMOUNT, consts.BLUR_AMOUNT), cv.BORDER_DEFAULT)
+    if cv.waitKey(1) == ord('q'):
+        break
 
-    if (consts.APPLY_CANNY):
-        processed_frame = cv.Canny(processed_frame, consts.CANNY_THRESHOLD_1, consts.CANNY_THRESHOLD_2)
-
-    if (consts.MIRROR_IMAGE):
-        processed_frame = cv.flip(processed_frame, 1)
-        
-    return processed_frame
-
-def read_camera():
-    while True:
-        ret, frame = cam.read() 
-
-        if ret == False:
-            break
-
-        fps = calculate_fps()
-
-        resized_frame = rescale_frame(frame, consts.WEBCAM_RESIZE)
-        processed_frame = process_image(resized_frame)
-
-        put_fps_text(processed_frame, fps, consts.FPS_TEXT_POS)
-
-        cv.imshow('webcam', resized_frame)  
-        cv.imshow('processed webcam', processed_frame)
-
-        if cv.waitKey(1) == ord('q'):
-            break
-
-read_camera()
-cam.release()
+capture.release()
 cv.destroyAllWindows()
