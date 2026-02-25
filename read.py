@@ -1,30 +1,60 @@
 import cv2 as cv
 import time
+import torch
+import numpy as np
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning) # Suppress random deprecation warnings in used scripts 
 
-face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_alt.xml')
-eye_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_eye.xml')
+model = torch.hub.load("ultralytics/yolov5", "yolov5s")
+
+if model:
+    print("Model Loaded Properly!")
+else:
+    print("ERROR LOADING MODEL")
 
 video = cv.VideoCapture(0)
 fps = 1 / 30
 
-while True:
+while video.isOpened():
     ret, frame = video.read()
-
     if not ret:
         break
 
-    faces = face_cascade.detectMultiScale(frame, 1.1, 2)
-    eyes = eye_cascade.detectMultiScale(frame, 1.1, 2)
+    # Getting results
+    results = model(frame)
+    labels, cord = results.xyxyn[0][:, -1].numpy(), results.xyxyn[0][:, :-1].numpy()
 
-    for(x, y, w, h) in faces:
-        cv.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    # Going through every object
+    for i in range(len(labels)):
+        row = cord[i]
 
-    for(x, y, w, h) in eyes:
-        cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        confidence = row[4]
 
-    cv.imshow("window", frame)
+        # Check probability of object being correctly identified
+        if confidence >= 0.5:
+            x1, y1, x2, y2 = (
+                int(row[0] * frame.shape[1]), 
+                int(row[1] * frame.shape[0]),
+                int(row[2] * frame.shape[1]),
+                int(row[3] * frame.shape[0])
+            )
+            
+            label = model.names[int(labels[i])]
 
-    time.sleep(fps)
+            if label == "person":
+                print(f"PERSON FOUND AT: x: {x1}, y: {y1}")
+
+            # Label & Shape
+            cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv.putText(frame, 
+                       f'{label}; {(confidence * 100):.2f}%', 
+                       (x1, y1 - 10), 
+                       cv.FONT_HERSHEY_SIMPLEX, 
+                       0.7, 
+                       (36, 255, 12), 
+                       2)
+
+    cv.imshow("Yolov5 Object Detection", frame)
 
     if cv.waitKey(1) == ord('q'):
         break
