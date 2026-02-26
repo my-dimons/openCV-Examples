@@ -5,7 +5,7 @@ import numpy as np
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning) # Suppress random deprecation warnings in used scripts 
 
-model = torch.hub.load("ultralytics/yolov5", "yolov5s")
+model = torch.hub.load("ultralytics/yolov5", "yolov5s", trust_repo=True)
 
 if model:
     print("Model Loaded Properly!")
@@ -31,7 +31,7 @@ while video.isOpened():
         confidence = row[4]
 
         # Check probability of object being correctly identified
-        if confidence >= 0.5:
+        if confidence >= 0.0:
             x1, y1, x2, y2 = (
                 int(row[0] * frame.shape[1]), 
                 int(row[1] * frame.shape[0]),
@@ -47,7 +47,7 @@ while video.isOpened():
             # Label & Shape
             cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv.putText(frame, 
-                       f'{label}; {(confidence * 100):.2f}%', 
+                       f'{label}: {(confidence * 100):.2f}%', 
                        (x1, y1 - 10), 
                        cv.FONT_HERSHEY_SIMPLEX, 
                        0.7, 
