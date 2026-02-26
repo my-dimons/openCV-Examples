@@ -31,13 +31,15 @@ while video.isOpened():
         confidence = row[4]
 
         # Check probability of object being correctly identified
-        if confidence >= 0.0:
+        if confidence >= 0.5:
             x1, y1, x2, y2 = (
                 int(row[0] * frame.shape[1]), 
                 int(row[1] * frame.shape[0]),
                 int(row[2] * frame.shape[1]),
                 int(row[3] * frame.shape[0])
             )
+
+            width, height = x2 - x1, y2 - y1
             
             label = model.names[int(labels[i])]
 
@@ -45,7 +47,12 @@ while video.isOpened():
                 print(f"PERSON FOUND AT: x: {x1}, y: {y1}")
 
             # Label & Shape
-            cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+            cv.line(frame, (x1, y1), (x2, y2), (255, 255, 0), 2)
+            cv.line(frame, (x1, y2), (x2, y1), (255, 255, 0), 2)
+            
+            cv.circle(frame, (int(x1 + width / 2), int(y1 + width / 2)), 20, (255, 0, 0), 2)
+            cv.circle(frame, (int(x1 + width / 2), int(y1 + width / 2)), width, (0, 255, 0), 2)
             cv.putText(frame, 
                        f'{label}: {(confidence * 100):.2f}%', 
                        (x1, y1 - 10), 
