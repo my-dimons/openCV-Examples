@@ -3,6 +3,7 @@ import time
 
 capture = cv.VideoCapture('videos/kitten.mp4')
 
+# Amount of seconds to wait to achieve 30fps
 FPS = 1 / 30
 
 def rescaleFrame(frame, scale = 0.75):
@@ -13,17 +14,21 @@ def rescaleFrame(frame, scale = 0.75):
     return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
 
 while True:
-    isTrue, frame = capture.read()
+    receievedImage, frame = capture.read()
 
-    if isTrue == False:
+    # Check if an image was recieved
+    if receievedImage == False:
         break
 
-    frame_resized = rescaleFrame(frame, 0.1)
+    frame_resized = rescaleFrame(frame)
     
+    # Show the current frame of the video
     cv.imshow('video', frame_resized)
 
+    # Sleep to achieve the FPS count
     time.sleep(FPS)
 
+    # If the 'q' key is pressed, close the window
     if cv.waitKey(1) == ord('q'):
         break
 
