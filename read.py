@@ -1,70 +1,34 @@
 import cv2 as cv
-import time
-import torch
-import numpy as np
-import warnings
-warnings.filterwarnings("ignore", category=FutureWarning) # Suppress random deprecation warnings in used scripts 
+import pytesseract as pyt
+import pyautogui as pag
 
-model = torch.hub.load("ultralytics/yolov5", "yolov5s", trust_repo=True)
+pyt.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-if model:
-    print("Model Loaded Properly!")
-else:
-    print("ERROR LOADING MODEL")
+def rescaleFrame(frame, scale = 0.75):
+    width = int(frame.shape[1] * scale)
+    height = int(frame.shape[0] * scale)
+    dimensions = (width, height)
 
-video = cv.VideoCapture(0)
-fps = 1 / 30
+    return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
 
-while video.isOpened():
-    ret, frame = video.read()
-    if not ret:
-        break
+image = rescaleFrame(pag.screenshot(), 0.5)
+gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
-    # Getting results
-    results = model(frame)
-    labels, cord = results.xyxyn[0][:, -1].numpy(), results.xyxyn[0][:, :-1].numpy()
+# Extract text 
+extracted_text = pyt.image_to_string(gray)
 
-    # Going through every object
-    for i in range(len(labels)):
-        row = cord[i]
+print("Extracted Text: \n" + extracted_text)
 
-        confidence = row[4]
 
-        # Check probability of object being correctly identified
-        if confidence >= 0.5:
-            x1, y1, x2, y2 = (
-                int(row[0] * frame.shape[1]), 
-                int(row[1] * frame.shape[0]),
-                int(row[2] * frame.shape[1]),
-                int(row[3] * frame.shape[0])
-            )
+data = pyt.image_to_data(image, output_type=pyt.Output.DICT)
 
-            width, height = x2 - x1, y2 - y1
-            
-            label = model.names[int(labels[i])]
+n_boxes = len(data['level'])
+for i in range(n_boxes):
+    (x, y, w, h) = (data['left'][i], data['top'][i], data['width'][i], data['height'][i])
+    cv.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
-            if label == "person":
-                print(f"PERSON FOUND AT: x: {x1}, y: {y1}")
 
-            # Label & Shape
-            cv.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv.line(frame, (x1, y1), (x2, y2), (255, 255, 0), 2)
-            cv.line(frame, (x1, y2), (x2, y1), (255, 255, 0), 2)
-            
-            cv.circle(frame, (int(x1 + width / 2), int(y1 + width / 2)), 20, (255, 0, 0), 2)
-            cv.circle(frame, (int(x1 + width / 2), int(y1 + width / 2)), width, (0, 255, 0), 2)
-            cv.putText(frame, 
-                       f'{label}: {(confidence * 100):.2f}%', 
-                       (x1, y1 - 10), 
-                       cv.FONT_HERSHEY_SIMPLEX, 
-                       0.7, 
-                       (36, 255, 12), 
-                       2)
 
-    cv.imshow("Yolov5 Object Detection", frame)
+cv.imshow("Recognized Text", image)
 
-    if cv.waitKey(1) == ord('q'):
-        break
-
-video.release()
-cv.destroyAllWindows()
+cv.waitKey(0)
