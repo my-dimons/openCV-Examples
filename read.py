@@ -20,8 +20,7 @@ while True:
 
     frame_resized = rescaleFrame(frame, 0.1)
     
-    for i in range(0, 60):
-        cv.imshow('video ' + str(i), frame_resized)
+    cv.imshow('video', frame_resized)
 
     time.sleep(FPS)
 
