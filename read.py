@@ -18,8 +18,12 @@ def convertScreenshotToFrame(screenshot):
 
     return frame
 
-image = rescaleFrame(convertScreenshotToFrame(pag.screenshot()), 0.5)
+while True:
+    frame = rescaleFrame(convertScreenshotToFrame(pag.screenshot()), 0.5)
 
-cv.imshow("Desktop", image)
+    cv.imshow("Desktop", frame)
 
-cv.waitKey(0)
+    if cv.waitKey(1) == ord('q'):
+        break
+    
+cv.destroyAllWindows()
