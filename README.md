@@ -1,4 +1,4 @@
-# Welcome to OpenCV-Testing!
+# Welcome to OpenCV-Examples!
 This is a repo where I mess around in openCV. I thought it would be useful to make a collection of different things possible with openCV, so below are some useful branches that could help you understand openCV!
 
 If you want to contribute to this project, that being a small improvement, better commenting, or an entirely new feature, **GO FOR IT!** I appreciate any form of contribution
