@@ -48,11 +48,6 @@ while video.isOpened():
 
             # Label & Shape
             cv.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv.line(frame, (x1, y1), (x2, y2), (255, 255, 0), 2)
-            cv.line(frame, (x1, y2), (x2, y1), (255, 255, 0), 2)
-            
-            cv.circle(frame, (int(x1 + width / 2), int(y1 + width / 2)), 20, (255, 0, 0), 2)
-            cv.circle(frame, (int(x1 + width / 2), int(y1 + width / 2)), width, (0, 255, 0), 2)
             cv.putText(frame, 
                        f'{label}: {(confidence * 100):.2f}%', 
                        (x1, y1 - 10), 
